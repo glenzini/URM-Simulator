@@ -1,0 +1,128 @@
+ 
+
+
+=========================================
+    Welcome to the URM Interpreter 
+      G. Lenzini, v 1.0 - 2025 
+=========================================
+
+Commands can be ALLCAP or Smallcaps (e.g., PRINTALL, Printall)
+
+-----------------------------------------
+Type programs or commands ending with ;; 
+-----------------------------------------
+Syntax: 
+
+PROG <name>: <body> ;; 
+
+* Define a program by listing its instructions
+   
+   <name> is an alphanumeric string, e.g., sum, proj3) 
+   <body> can be:
+
+* URM instructions (one per line): Z(n), S(n), T(m,n), or J(m,n,q)
+
+  - Z(n): zero, reset R(n) 
+  - S(n): successor, add one to R(n) 
+  - T(n,m): transfer, copy R(n) into R(m) 
+  - J(n,m,q): jump, goto inst q if R(n) = R(m) 
+
+lines can be numbered (from 1) or not, e.g., 1: Z(1) or Z(1) 
+
+---------------------
+Compose programs
+---------------------
+
+We can write new program using the following macro
+
+PROG <name>: 
+
+* Relocation: program read from registers m,n and output in register k 
+<name> [registers -> <number>]
+
+Here registers is a comma separated list of numbers e.g., 3,45,1
+
+* Concatenation: program one after the other ;; 
+<name> ; <name> ; ... ;; 
+
+* Substitution: f(g1,g2,): 1
+<name> (<name>, <name>, ...): <number> ;; 
+
+Here, <number> is the arity of the gs
+
+* Recursion
+REC (<name>, <name>): <number> ;; 
+
+Here, <number> is the arity of the function with less arity 
+
+* Minimization
+MIN (<name>, <name>): <number> ;; 
+
+Here, <number> is the arity of the function with less arity 
+
+---------------------
+Run or eval programs 
+---------------------
+
+RUN <name> (inputs) ;; 
+* run, returns all the registeres: 
+
+RUNBOUND <name> (inputs) <number> ;; 
+* run for n steps: RUNBOUND <name> (registers) <number> ;; 
+
+EVAL <name> (inputs) ;;  
+* evaluate, returns R1: EVAL <name> (registers) ;;  
+
+Here "inputs" is a comma separated list of numbers e.g., 3,45,1
+
+--------------------------------
+Print one program or all of them
+--------------------------------
+
+PRINT <name> ;;
+PRINTALL ;; 
+
+--------------------------------
+Load or Save your code in files
+--------------------------------
+
+SAVE <name> <file> ;;
+* Save the function on file
+
+LOAD <file> ;;
+* Load a file
+
+Here <file> is the name of the file without .txt
+
+--------------------------------
+encoding / decoding 
+--------------------------------
+
+ENCODE <name>;; 
+* Returns the index of program <name>
+
+DECODE #<number>;; 
+* Returns the program of index <number>
+
+--------------------------------
+UNIVERSAL MACHINE
+--------------------------------
+
+SIMULATE #<index> (<inputs>) ;; 
+
+* SIMULATE #e (x,y) ;;
+Runs the universal machine U(e,x,y)
+
+--------------------------------
+Print this help
+--------------------------------
+
+HELP ;; 
+
+--------------------------------
+Quit
+--------------------------------
+
+Exit ;; 
+
+--- Good URM coding!

@@ -1,0 +1,22 @@
+% require sum_prod ;;
+
+% exponentiation
+%  exp(x,0) = 1 
+%  exp(x,y+1) = prod(exp(x,y),x) 
+
+%  recall: h(x,0) = f(x)
+%  recall: h(x,y+1) = g(x,y,h(x,y))
+%  exp(x,y+1) = prod(proj1,proj3)(x,y,exp(x,y))
+
+Prog uno:
+Z(1)
+S(1)
+;;
+
+Prog expg:
+prod(proj1,proj3):3
+;;
+
+Prog exp:
+REC(uno,expg):1
+;;
