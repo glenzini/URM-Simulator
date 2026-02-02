@@ -59,10 +59,12 @@ instr:
 concatlist:
   | NAME SEMI concatlist { $1 :: $3 }
   | NAME { [$1] }
+  | /* empty */ { [] }
 
 namelist:
   | NAME COMMA namelist { $1 :: $3 }
   | NAME { [$1] }
+  | /* empty */ { [] }
 
 numbers:
   | NUMBER COMMA numbers { $1 :: $3 }
