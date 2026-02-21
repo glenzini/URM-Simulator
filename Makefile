@@ -1,6 +1,7 @@
 OCAMLC=ocamlc
 OCAMLOPT=ocamlopt
 PACKAGES=-package zarith -package ocamline
+PACKAGES_SERVER=-package zarith,dream,yojson -thread
 OCAML_FLAGS=-I +zarith
 OCAML_LIBS=zarith.cma ocamline.cma
 LEX=ocamllex
@@ -16,8 +17,23 @@ OBJS = \
   URMinterpret.cmo \
   URMREPL.cmo
 
-# build all (= the urm interpreter)
-all: urm
+# Server object list (no URMREPL — replaced by URM_server)
+OBJS_SERVER = \
+  URM_types.cmo \
+  URM_machine.cmo \
+  URM_counting_programs.cmo \
+  URMParser.cmo \
+  URMLEX.cmo \
+  URM_input_output.cmo \
+  URMinterpret.cmo \
+  URM_server.cmo
+
+# build all (= the urm interpreter + the web server)
+all: urm urm_server
+
+# Convenience: build + run the web server
+server: urm_server
+	./_build/default/URM_server.exe
 
 # Generate parser from .mly
 # $(YACC) -v URMParser.mly 
@@ -44,10 +60,18 @@ URMLEX.cmo: URMLEX.ml URMParser.cmi URM_types.cmi
 	@if test -f "$*.mli"; then ocamlfind $(OCAMLC) $(PACKAGES) -c $*.mli; fi
 	ocamlfind $(OCAMLC) $(PACKAGES) -c $<
 
-# Build final executable
+# Build final executable (CLI interpreter)
 urm: $(OBJS)
 	ocamlfind $(OCAMLC) $(PACKAGES) -linkpkg -o urm $(OBJS)
 
+# Compile server module (needs dream + yojson, no ocamline)
+URM_server.cmo: URM_server.ml URMinterpret.cmo
+	ocamlfind $(OCAMLC) $(PACKAGES_SERVER) -c URM_server.ml
+
+# Build web server executable (via dune — resolves Dream's transitive deps)
+urm_server:
+	dune build && cp _build/default/URM_server.exe urm_server
+
 # Clean all build artifacts
 clean:
-	rm -f *.cmo *.cmi *.o *.out urml URMParser.ml URMParser.mli URMParser.output URMLEX.ml
+	rm -f *.cmo *.cmi *.o *.out urm urm_server URMParser.ml URMParser.mli URMParser.output URMLEX.ml

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>URM Simulator</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header>
+  <div class="header-title">
+    <span class="logo">⚙</span>
+    <h1>URM Simulator</h1>
+    <span class="subtitle">Unlimited Register Machine</span>
+  </div>
+  <div class="header-right">
+    <select id="fileSelect" title="Load an example or saved file">
+      <option value="">Load file…</option>
+      <optgroup id="optExamples" label="Built-in examples"></optgroup>
+      <optgroup id="optSaved"    label="Saved files"></optgroup>
+    </select>
+    <div class="save-row">
+      <input id="saveFilename" type="text" placeholder="filename" title="Name to save as (no .txt needed)" />
+      <button id="btnSave" class="btn btn-secondary" title="Save editor content to a file on the server">💾 Save</button>
+    </div>
+    <button id="btnHelp" class="btn btn-ghost" title="Show syntax reference">? Help</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============================================================ -->
+  <!-- LEFT PANEL: editor + controls                                -->
+  <!-- ============================================================ -->
+  <section class="panel panel-editor">
+
+    <div class="editor-wrapper">
+      <div class="line-numbers" id="lineNumbers" aria-hidden="true"></div>
+      <textarea
+        id="editor"
+        spellcheck="false"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        placeholder="Write your URM programs here, e.g.
+
+PROG add:
+  Z(3)
+  J(2,3,6)
+  S(1)
+  S(3)
+  J(1,1,2)
+;;
+
+Then click RUN, EVAL, or STEP."
+      ></textarea>
+    </div>
+
+    <!-- Controls bar -->
+    <div class="controls">
+      <div class="ctrl-group">
+        <label class="ctrl-label">Program</label>
+        <input id="progName" type="text" placeholder="name" title="Program name to run" />
+      </div>
+      <div class="ctrl-group">
+        <label class="ctrl-label">Inputs</label>
+        <input id="progArgs" type="text" placeholder="e.g. 3, 5" title="Comma-separated input values" />
+      </div>
+      <div class="ctrl-group ctrl-actions">
+        <button id="btnRun"      class="btn btn-primary"   title="RUN: execute and show all registers">RUN</button>
+        <button id="btnEval"     class="btn btn-primary"   title="EVAL: execute and show R1 only">EVAL</button>
+        <button id="btnPrint"    class="btn btn-secondary" title="PRINT: show compiled instructions of the program">PRINT</button>
+        <div class="ctrl-bound-row">
+          <button id="btnRunBound" class="btn btn-secondary" title="RUNBOUND: execute at most N steps">RUNBOUND</button>
+          <input id="boundSteps" type="number" value="100" min="1" title="Max steps for RUNBOUND" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Step controls -->
+    <div class="step-controls">
+      <span class="ctrl-label">Step-by-step</span>
+      <button id="btnStepStart" class="btn btn-step" title="Start step-by-step execution">▶ Start</button>
+      <button id="btnStepNext"  class="btn btn-step" disabled title="Execute next instruction">⏭ Next</button>
+      <button id="btnStepReset" class="btn btn-step btn-danger" disabled title="Stop and reset">⏹ Reset</button>
+      <span id="stepStatus" class="step-status"></span>
+    </div>
+
+    <!-- Encode/Decode/Simulate panel -->
+    <div class="godel-panel">
+      <div class="godel-title">Gödel Encoding</div>
+      <div class="godel-row">
+        <label>ENCODE</label>
+        <input id="encodeProgName" type="text" placeholder="program name" />
+        <button id="btnEncode" class="btn btn-ghost">Encode</button>
+      </div>
+      <div class="godel-row">
+        <label>DECODE</label>
+        <input id="decodeIndex" type="text" placeholder="#index number" />
+        <button id="btnDecode" class="btn btn-ghost">Decode</button>
+      </div>
+      <div class="godel-row">
+        <label>SIMULATE</label>
+        <input id="simIndex" type="text" placeholder="#index number" />
+        <input id="simArgs"  type="text" placeholder="inputs e.g. 3, 5" />
+        <button id="btnSimulate" class="btn btn-ghost">Simulate</button>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- RIGHT PANEL: registers + output log                          -->
+  <!-- ============================================================ -->
+  <section class="panel panel-output">
+
+    <!-- Register table -->
+    <div class="registers-section">
+      <div class="section-header">
+        <h2>Registers</h2>
+        <span id="pcDisplay" class="pc-badge" title="Program Counter">PC: —</span>
+      </div>
+      <div id="registersTable" class="registers-table">
+        <div class="reg-placeholder">Run a program to see register values.</div>
+      </div>
+    </div>
+
+    <!-- Program viewer (after PRINT / DECODE) -->
+    <div class="prog-view-section" id="progViewSection" style="display:none">
+      <div class="section-header">
+        <h2 id="progViewTitle">Program</h2>
+        <button id="btnCloseProgView" class="btn btn-ghost btn-sm">✕</button>
+      </div>
+      <ol id="progViewList" class="prog-view-list"></ol>
+    </div>
+
+    <!-- Output log -->
+    <div class="output-section">
+      <div class="section-header">
+        <h2>Output</h2>
+        <button id="btnClearLog" class="btn btn-ghost btn-sm">Clear</button>
+      </div>
+      <div id="outputLog" class="output-log">
+        <div class="log-entry log-info">Welcome to the URM Simulator. Write a program and click RUN.</div>
+      </div>
+    </div>
+
+  </section>
+
+</main>
+
+<!-- Help modal -->
+<div id="helpModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="helpTitle" hidden>
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 id="helpTitle">URM Language Reference</h2>
+      <button id="btnCloseHelp" class="btn btn-ghost btn-sm">✕</button>
+    </div>
+    <div class="modal-body">
+      <pre id="helpContent" class="help-text"></pre>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

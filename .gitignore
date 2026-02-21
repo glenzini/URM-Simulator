@@ -8,9 +8,16 @@
 *.a
 *.out
 
-# Executable
+# Executables
 urm
 urmrepl
+urm_server
+
+# Dune build directory
+_build/
+
+# User-saved URM files (local data, not source)
+saved/*.txt
 
 # Generated files from lexer/parser
 URMParser.ml

@@ -1,0 +1,30 @@
+; dune build file for the URM web server
+;
+; We disable several warnings that exist in the pre-existing source files:
+;   32  unused value declaration
+;   27  unused variable
+;   33  unused open
+;   38  unused exception
+;   39  unused rec flag
+;    8  non-exhaustive pattern
+
+; Generate parser from URMParser.mly
+(ocamlyacc URMParser)
+
+; Generate lexer from URMLEX.mll
+(ocamllex URMLEX)
+
+(executable
+ (name URM_server)
+ (libraries zarith dream yojson)
+ (ocamlopt_flags (:standard -w -32-27-33-38-39-8))
+ (flags        (:standard -w -32-27-33-38-39-8))
+ (modules
+   URM_types
+   URM_machine
+   URM_counting_programs
+   URM_input_output
+   URMParser
+   URMLEX
+   URMinterpret
+   URM_server))
