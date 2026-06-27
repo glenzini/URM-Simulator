@@ -1,0 +1,57 @@
+
+% addition
+%  sum(x,0) = x  (id)
+%  sum(x,y+1) = succ(sum(x,y)) 
+
+%  recall: h(x,0) = f(x)
+%  recall: h(x,y+1) = g(x,y,h(x,y))
+%  sum(x,y+1) = succ(proj3)(x,y,sum(x,y))
+
+% base
+PROG id:
+1: T(1,1)
+;;
+
+PROG succ:
+1: S(1)
+;;
+
+PROG proj3:
+1: T(3,1)
+;;
+
+PROG sumg:
+succ(proj3):3
+;;
+
+PROG sum:
+REC(id,sumg):1 
+;;
+
+% multiplication
+% prod(x,0) = 0
+% prod(x,y+1) = sum(prod(x,y),x)
+
+%  recall: h(x,0) = f(x)
+%  recall: h(x,y+1) = g(x,y,h(x,y))
+%  prod(x,y+1) = sum(proj1,proj3)(x,y,prod(x,y))
+
+% base
+
+Prog zero:
+1: Z(1)
+;;
+
+PROG proj1:
+1: T(1,1)
+;;
+
+Prog prodg:
+sum(proj1,proj3):3
+;;
+
+Prog prod:
+Rec(zero,prodg):1
+;;
+
+

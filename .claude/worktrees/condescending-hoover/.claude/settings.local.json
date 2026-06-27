@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/gabriele.lenzini/IRiSC Dropbox/Gabriele Lenzini/17-Software/Visual Code/URM-Simulator/.git/**)",
+      "Read(//Users/gabriele.lenzini/IRiSC Dropbox/Gabriele Lenzini/17-Software/Visual Code/URM-Server/examples/**)",
+      "Bash(mkdir -p \"/Users/gabriele.lenzini/IRiSC Dropbox/Gabriele Lenzini/17-Software/Visual Code/URM-Simulator/.claude/worktrees/condescending-hoover/docs/examples\")",
+      "Bash(mkdir -p \"/Users/gabriele.lenzini/IRiSC Dropbox/Gabriele Lenzini/17-Software/Visual Code/URM-Simulator/.claude\")",
+      "Read(//Users/gabriele.lenzini/IRiSC Dropbox/Gabriele Lenzini/17-Software/Visual Code/URM-Simulator/.claude/**)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(cp -r '/Users/gabriele.lenzini/IRiSC Dropbox/Gabriele Lenzini/17-Software/Visual Code/URM-Simulator/.claude/worktrees/condescending-hoover/docs' '/Users/gabriele.lenzini/IRiSC Dropbox/Gabriele Lenzini/17-Software/Visual Code/URM-Simulator/')",
+      "Bash(cp -r '/Users/gabriele.lenzini/IRiSC Dropbox/Gabriele Lenzini/17-Software/Visual Code/URM-Simulator/.claude/worktrees/condescending-hoover/.github' '/Users/gabriele.lenzini/IRiSC Dropbox/Gabriele Lenzini/17-Software/Visual Code/URM-Simulator/')",
+      "Read(//Users/gabriele.lenzini/IRiSC Dropbox/Gabriele Lenzini/17-Software/Visual Code/URM-Simulator/**)",
+      "Read(//Users/gabriele.lenzini/IRiSC Dropbox/Gabriele Lenzini/17-Software/Visual Code/URM-Simulator/.github/**)",
+      "Bash(gh api *)",
+      "Bash(gh run *)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('status:', d['status'], '| url:', d['html_url']\\)\")"
+    ]
+  }
+}
