@@ -411,7 +411,7 @@ function concatenate_(p, q) {
 }
 
 function concatenateList(progs) {
-  return progs.reduceRight((acc, p) => concatenate(p, acc), []);
+  return progs.reduce((acc, p) => concatenate(acc, p), []);
 }
 
 function listinit(a, n)  { return Array.from({ length: Math.max(0,n) }, (_, k) => a+k); }
@@ -430,7 +430,7 @@ function relocate(prog, ris, ro) {
 
 function listOfGs(glist, m, n) {
   const rlist = listinit(m, n);
-  return [].concat(...glist.map((g, i) => relocate(g, rlist, m+n+i)));
+  return concatenateList(glist.map((g, i) => relocate(g, rlist, m+n+i)));
 }
 
 function compose(f, glist, n) {
