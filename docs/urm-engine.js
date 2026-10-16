@@ -362,7 +362,7 @@ function execInstr(instr, m) {
   }
 }
 
-const MAX_STEPS = 10_000_000;
+const MAX_STEPS = 1_000_000_000;
 
 function run(prog, args) {
   if (!prog.length) return new Array(args.length).fill(0).map((_, k) => args[k] ?? 0);
@@ -737,18 +737,79 @@ function handleSimulate({ index, args }) {
 }
 
 // ==========================================================================
+// Direct (in-thread) dispatch — used by the Web Worker
+// ==========================================================================
+
+function _internalApi(path, body) {
+  if (path === '/api/run')       return handleRun(body);
+  if (path === '/api/eval')      return handleEval(body);
+  if (path === '/api/runbound')  return handleRunbound(body);
+  if (path === '/api/simulate')  return handleSimulate(body);
+  return { ok: false, error: 'Unknown worker endpoint: ' + path };
+}
+
+// ==========================================================================
+// Web Worker — runs heavy computation off the main thread
+// ==========================================================================
+
+const HEAVY_PATHS = new Set(['/api/run', '/api/eval', '/api/runbound', '/api/simulate']);
+
+let _worker  = null;
+let _pending = null;
+let _msgId   = 0;
+
+function ensureWorker() {
+  if (_worker) return _worker;
+  _worker = new Worker('./urm-worker.js');
+  _worker.onmessage = function(e) {
+    const { id, result } = e.data;
+    if (_pending && _pending.id === id) {
+      const resolve = _pending.resolve;
+      _pending = null;
+      resolve(result);
+    }
+  };
+  _worker.onerror = function(e) {
+    const resolve = _pending && _pending.resolve;
+    _pending = null;
+    _worker = null;
+    if (resolve) resolve({ ok: false, error: 'Worker error: ' + (e.message || 'unknown') });
+  };
+  return _worker;
+}
+
+function terminateWorker() {
+  if (_worker) { _worker.terminate(); _worker = null; }
+  if (_pending) {
+    const resolve = _pending.resolve;
+    _pending = null;
+    resolve({ ok: false, error: 'Execution terminated by user.' });
+  }
+}
+
+function callWorker(path, body) {
+  const w  = ensureWorker();
+  const id = _msgId++;
+  return new Promise(resolve => {
+    _pending = { id, resolve };
+    w.postMessage({ id, path, body });
+  });
+}
+
+// ==========================================================================
 // Public interface — drop-in replacement for the fetch-based `api()` in app.js
 // ==========================================================================
 
 return {
   async api(path, body) {
+    if (HEAVY_PATHS.has(path))        return callWorker(path, body);
+
     if (path === '/api/examples')     return handleExamples();
     if (path === '/api/saved')        return handleSaved();
     if (path === '/api/save')         return handleSave(body);
 
     if (path.startsWith('/api/examples/')) {
       const name = decodeURIComponent(path.slice('/api/examples/'.length));
-      // Fetch from ./examples/ — works on GitHub Pages (static files)
       try {
         const resp = await fetch(`./examples/${name}.txt`);
         if (!resp.ok) return { ok: false, error: 'Example not found: ' + name };
@@ -760,19 +821,18 @@ return {
       return handleSavedGet(decodeURIComponent(path.slice('/api/saved/'.length)));
     }
 
-    if (path === '/api/run')          return handleRun(body);
-    if (path === '/api/eval')         return handleEval(body);
-    if (path === '/api/runbound')     return handleRunbound(body);
     if (path === '/api/print')        return handlePrint(body);
     if (path === '/api/encode')       return handleEncode(body);
     if (path === '/api/decode')       return handleDecode(body);
-    if (path === '/api/simulate')     return handleSimulate(body);
     if (path === '/api/step/start')   return stepStart(body.source, body.name, body.args);
     if (path === '/api/step/next')    return stepNext(body.session_id);
     if (path === '/api/step/reset')   return stepReset(body.session_id);
 
     return { ok: false, error: 'Unknown endpoint: ' + path };
   },
+
+  terminate: terminateWorker,
+  _internalApi,
 };
 
 })(); // end URM module

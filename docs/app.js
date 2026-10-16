@@ -42,6 +42,24 @@ let lastRegisters  = null;
 let stepProgInstr  = [];
 
 /* ---------------------------------------------------------------- */
+/* Busy state — shown during long Worker computations               */
+/* ---------------------------------------------------------------- */
+const btnTerminate = document.getElementById('btnTerminate');
+
+function setBusy(busy) {
+  document.getElementById('btnRun').disabled      = busy;
+  document.getElementById('btnEval').disabled     = busy;
+  document.getElementById('btnRunBound').disabled = busy;
+  document.getElementById('btnSimulate').disabled = busy;
+  btnTerminate.hidden = !busy;
+}
+
+btnTerminate.addEventListener('click', () => {
+  URM.terminate();
+  // The pending api() call resolves with an error; its finally{} calls setBusy(false).
+});
+
+/* ---------------------------------------------------------------- */
 /* Utilities                                                         */
 /* ---------------------------------------------------------------- */
 
@@ -169,10 +187,13 @@ document.getElementById('btnRun').addEventListener('click', async () => {
   const args = parseArgs(progArgs.value);
   if (!name) { logErr('Enter a program name.'); return; }
   logCmd('RUN ' + name + '(' + args.join(', ') + ')');
-  const res = await api('/api/run', { source: editor.value, name, args });
-  if (!res.ok) { logErr(res.error); return; }
-  showRegisters(res.data.registers, null, true);
-  logOk(res.data.registers.map((v, i) => 'R' + (i+1) + '=' + v).join('  '));
+  setBusy(true);
+  try {
+    const res = await api('/api/run', { source: editor.value, name, args });
+    if (!res.ok) { logErr(res.error); return; }
+    showRegisters(res.data.registers, null, true);
+    logOk(res.data.registers.map((v, i) => 'R' + (i+1) + '=' + v).join('  '));
+  } finally { setBusy(false); }
 });
 
 /* ---------------------------------------------------------------- */
@@ -184,10 +205,13 @@ document.getElementById('btnEval').addEventListener('click', async () => {
   const args = parseArgs(progArgs.value);
   if (!name) { logErr('Enter a program name.'); return; }
   logCmd('EVAL ' + name + '(' + args.join(', ') + ')');
-  const res = await api('/api/eval', { source: editor.value, name, args });
-  if (!res.ok) { logErr(res.error); return; }
-  showRegisters([res.data.result], null, false);
-  logOk('R1 = ' + res.data.result);
+  setBusy(true);
+  try {
+    const res = await api('/api/eval', { source: editor.value, name, args });
+    if (!res.ok) { logErr(res.error); return; }
+    showRegisters([res.data.result], null, false);
+    logOk('R1 = ' + res.data.result);
+  } finally { setBusy(false); }
 });
 
 /* ---------------------------------------------------------------- */
@@ -200,10 +224,13 @@ document.getElementById('btnRunBound').addEventListener('click', async () => {
   const bound = parseInt(boundSteps.value, 10) || 100;
   if (!name) { logErr('Enter a program name.'); return; }
   logCmd('RUNBOUND ' + name + '(' + args.join(', ') + ') ' + bound);
-  const res = await api('/api/runbound', { source: editor.value, name, args, bound });
-  if (!res.ok) { logErr(res.error); return; }
-  showRegisters(res.data.registers, null, true);
-  logOk(res.data.registers.map((v, i) => 'R' + (i+1) + '=' + v).join('  ') + '  [max ' + bound + ' steps]');
+  setBusy(true);
+  try {
+    const res = await api('/api/runbound', { source: editor.value, name, args, bound });
+    if (!res.ok) { logErr(res.error); return; }
+    showRegisters(res.data.registers, null, true);
+    logOk(res.data.registers.map((v, i) => 'R' + (i+1) + '=' + v).join('  ') + '  [max ' + bound + ' steps]');
+  } finally { setBusy(false); }
 });
 
 /* ---------------------------------------------------------------- */
@@ -315,9 +342,12 @@ document.getElementById('btnSimulate').addEventListener('click', async () => {
   if (raw.startsWith('#')) raw = raw.slice(1);
   if (!raw) { logErr('Enter a Gödel index to simulate.'); return; }
   logCmd('SIMULATE #' + raw + '(' + args.join(', ') + ')');
-  const res = await api('/api/simulate', { index: raw, args });
-  if (!res.ok) { logErr(res.error); return; }
-  logOk(res.data.registers.map((v, i) => 'R' + (i+1) + '=' + v).join('  '));
+  setBusy(true);
+  try {
+    const res = await api('/api/simulate', { index: raw, args });
+    if (!res.ok) { logErr(res.error); return; }
+    logOk(res.data.registers.map((v, i) => 'R' + (i+1) + '=' + v).join('  '));
+  } finally { setBusy(false); }
 });
 
 /* ---------------------------------------------------------------- */
