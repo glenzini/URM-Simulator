@@ -104,14 +104,15 @@ in List.fold_left getmaxaux 0 instlist  ;;
 
 (* create a list (a,..,a+n-1) of length n*)
 let rec listinit = fun a n ->
-if n <= 0 then [] else
-if n = 1 then [a] else a :: listinit (a+1) (n-1) ;;
+if n = 0 then [] else
+if n = 1 then [a] else 
+  a :: listinit (a+1) (n-1) ;;
 
 (* create a list (a,..,a) of length n*)
 let rec listreset = fun a n ->
-if n <= 0 then [] else
+if n = 0 then [] else
 if n = 1 then [a] else
-a :: listreset (a) (n-1) ;;
+  a :: listreset (a) (n-1) ;;
     
 (* find rho in one instruction *)
 let rhoinst (inst:instr) =
@@ -223,7 +224,8 @@ in Array.append p q ;;
 (* ================================ *)
 
   let concatenateList pl = 
-    List.fold_right concatenate pl [||] ;;
+    (* List.fold_right concatenate pl [||] ;; *)
+     List.fold_left concatenate [||] pl ;;
 
 (* building up other compositional operations *)
 
