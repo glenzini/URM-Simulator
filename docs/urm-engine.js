@@ -362,16 +362,10 @@ function execInstr(instr, m) {
   }
 }
 
-const MAX_STEPS = 1_000_000_000;
-
 function run(prog, args) {
   if (!prog.length) return new Array(args.length).fill(0).map((_, k) => args[k] ?? 0);
   const m = makeMachine(prog, args);
-  let steps = 0;
-  while (m.pc <= prog.length) {
-    if (++steps > MAX_STEPS) throw new Error('Execution limit reached (possible infinite loop). Use RUNBOUND to cap steps.');
-    execInstr(prog[m.pc-1], m);
-  }
+  while (m.pc <= prog.length) execInstr(prog[m.pc-1], m);
   return m.rs;
 }
 
